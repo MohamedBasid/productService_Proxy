@@ -1,8 +1,12 @@
 package com.example.productservice_proxy.controllers;
 
 import com.example.productservice_proxy.DTOs.ProductDto;
+import com.example.productservice_proxy.models.Categories;
 import com.example.productservice_proxy.models.Products;
+import com.example.productservice_proxy.services.FakeStoreProductService;
 import com.example.productservice_proxy.services.IProductService;
+import org.apache.coyote.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -14,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/products")
 public class ProductController {
+
 
     IProductService productService;
     public ProductController(IProductService productService){
@@ -32,19 +37,22 @@ public class ProductController {
     }
     @GetMapping("/{id}")
     public ResponseEntity<Products> getSingleProduct(@PathVariable("id") Long productId) {
-        try{
+        //try{
             MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
             headers.add("auth-token", "It's Basid");
             Products product = this.productService.getSingleProduct(productId);
             if(product == null) throw new IllegalArgumentException("Given id does not exist");
 
             ResponseEntity<Products> productsResponseEntity = new ResponseEntity<>(product,
-                    headers, HttpStatus.OK);
+                    /*headers,*/ HttpStatus.OK);
             return productsResponseEntity;
+        /*
         }
+
         catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        */
     }
 
     @PostMapping()
@@ -56,14 +64,28 @@ public class ProductController {
         return responseEntity;
     }
 
-    @PutMapping("/{Id}")
-    public String updateProduct(@PathVariable("Id") Long productId) {
-        return "Updating product " + productId;
+    @PatchMapping("/{Id}")
+    public ResponseEntity<Products> patchProduct(@PathVariable("Id") Long productId, @RequestBody ProductDto productDto) {
+
+        Products product = new Products();
+        product.setId(productDto.getId());
+        product.setCategory(new Categories());
+        product.getCategory().setName(productDto.getCategory());
+        product.setTitle(productDto.getTitle());
+        product.setPrice(productDto.getPrice());
+        product.setDescription(productDto.getDescription());
+
+        ResponseEntity<Products> responseEntity = new ResponseEntity<>(
+                this.productService.updateProduct(productId, product),
+                HttpStatus.OK
+        );
+
+        return responseEntity;
     }
 
-    @PatchMapping("/{Id}")
-    public String patchProduct(@PathVariable("Id") Long productId) {
-        return "Patching product " + productId;
+    @PutMapping("/{Id}")
+    public String updateProduct(@PathVariable("Id") Long productId) {
+        return "updating (replacing) product " + productId;
     }
 
     @DeleteMapping("/{Id}")
