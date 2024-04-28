@@ -25,7 +25,6 @@ public class FakeStoreClient {
                 "https://fakestoreapi.com/products",
                 FakeStoreProductDto[].class
         );
-
         return Arrays.asList(responseEntity.getBody());
     }
 }

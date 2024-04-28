@@ -7,6 +7,7 @@ import com.example.productservice_proxy.services.FakeStoreProductService;
 import com.example.productservice_proxy.services.IProductService;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -19,16 +20,15 @@ import java.util.List;
 @RequestMapping("/products")
 public class ProductController {
 
-
     IProductService productService;
-    public ProductController(IProductService productService){
+    public ProductController(@Qualifier("our") IProductService productService){
         this.productService = productService;
     }
 
     @GetMapping("")
     public ResponseEntity<List<Products>> getAllProducts() {
 
-        List<Products> productsList = this.productService.getAllProducts();
+        List<Products> productsList = productService.getAllProducts();
 
         ResponseEntity<List<Products>> listResponseEntity = new ResponseEntity<>(productsList,
                 HttpStatus.OK);
@@ -40,7 +40,7 @@ public class ProductController {
         //try{
             MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
             headers.add("auth-token", "It's Basid");
-            Products product = this.productService.getSingleProduct(productId);
+            Products product = productService.getSingleProduct(productId).get();
             if(product == null) throw new IllegalArgumentException("Given id does not exist");
 
             ResponseEntity<Products> productsResponseEntity = new ResponseEntity<>(product,
